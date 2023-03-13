@@ -4,9 +4,10 @@ import java.util.HashMap;
 import java.util.concurrent.ThreadLocalRandom;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 import telran.monitoring.model.PulseProbe;
-
+@Service
 public class PulseProbesImitatorImpl implements PulseProbesImitator {
 	@Value("${app.amount.patients: 10}")
 	int nPatients;
@@ -23,11 +24,12 @@ public class PulseProbesImitatorImpl implements PulseProbesImitator {
 	@Value("${app.delta.increase.probability: 70}")
 	int deltaIncreaseProb;
 	static long seqNumber = 0;
-	ThreadLocalRandom tlr = ThreadLocalRandom.current();
+	
 	HashMap<Long, Integer> patientsPulseValues = new HashMap<>();
 
 	@Override
 	public PulseProbe nextProbe() {
+		ThreadLocalRandom tlr = ThreadLocalRandom.current();
 		long patientId = tlr.nextInt(1, nPatients + 1);
 		int value = getValue(patientId);
 		patientsPulseValues.put(patientId, value);
@@ -35,10 +37,12 @@ public class PulseProbesImitatorImpl implements PulseProbesImitator {
 				++seqNumber, value);
 	}
 	private int getValue(long patientId) {
+		ThreadLocalRandom tlr = ThreadLocalRandom.current();
 		Integer value = patientsPulseValues.get(patientId);
 		return value == null ? tlr.nextInt(minPulseValue, maxPulseValue) : getNewValue(value);
 	}
 	private int getNewValue(Integer value) {
+		ThreadLocalRandom tlr = ThreadLocalRandom.current();
 		int delta = (int) (isChance(jumpProb) ? value * jumpMultiple :
 			value * tlr.nextDouble(0, valueMultiple));
 		if (value + delta > maxPulseValue || !isChance(deltaIncreaseProb)) {
@@ -47,7 +51,7 @@ public class PulseProbesImitatorImpl implements PulseProbesImitator {
 		return value + delta;
 	}
 	private boolean isChance(int prob) {
-		
+		ThreadLocalRandom tlr = ThreadLocalRandom.current();
 		return tlr.nextInt(0, 100) < prob;
 	}
 
